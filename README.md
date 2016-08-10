@@ -85,32 +85,6 @@ Please add the PATH variable with the following value:
 
 C:\TD\TD_RF_Module_SDK-v6.0.0\gnu\bin
 
-### Compiling for TD1205P
-The TD1205P have not been officially released yet, you should be able to compile the project for the TD1205P with this project (configuration is included in this repository).
-However, if you wish to go back from scratch, few tricks will be needed.
-
-Then if we take this project as an example, here are the steps required to compile it:
-
-  1. In order to avoid unnecessary rebuilds of the common libraries, it is best to set the right
-     build configuration for all these libraries: unfold the `"Common_Libraries"` working set in the
-     Project Explorer panel on the left side, then select all the projects by clicking on the first one
-     in the list, pressing the `"SHIFT"`key, then clicking on the last one in the list
-  2. Click on the small downwards arrow right next to the `"Hammer"` icon in the top menu bar and
-     select the right build configuration corresponding to your board: `"TD1205P"` `"GCC Release EZR"` for a stripped down firmware
-  3. Unfold the `"Tutorial"` working set in the Project Explorer panel on the left side, then
-     select the `"sigfox_gps_tracker"` project
-  4. Click right on the project and select `"Properties"`.
-  5. Go to C/C++ build -> Build variable. Make sure that the TD1205P appear. If not you can create it by clicking on `"Manage Configuration"` -> `"New"` -> add `"TD1205P Release"` and copy the `"TD1508"` configuration.
-  6. Then go to `"Settings"`->`"Preprocessor"` and replace the revision with `"MODULE_REVISION=REVISION_TD1205P"`. Make sure you do it for both preprocessors tab (under assembler and compiler)
-  7. Click on OK
-  8. Open the file `"main.c"`
-  4. Click again on the small downwards arrow right next to the `"Hammer"` icon in the top menu bar and
-     select the same build configuration as for the libraries above (`"TD1205P"`)
-  5. Compilation of the `"sigfox_gps_tracker"`project and all the required dependencies will take place, which can
-     be monitored in the `"Console"` tab of the bottom panel.
-
-The same procedure can be used for all the example projects when required.
-
 ### Flash project
 Unlike some dedicated embedded Interactive Development Environments (IDEs), Eclipse does not come with
 fixed Flash/Debug commands or menu buttons: they need to be added explicitly on a project by project basis.
