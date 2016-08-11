@@ -774,7 +774,7 @@
 			<resource resourceType="PROJECT" workspacePath="/td1202"/>
 		</configuration>
 		<configuration configurationName="TD1205P Release">
-			<resource resourceType="PROJECT" workspacePath="/geoloc_fix_timer"/>
+			<resource resourceType="PROJECT" workspacePath="/sigfox_gps_tracker"/>
 		</configuration>
 		<configuration configurationName="Debug">
 			<resource resourceType="PROJECT" workspacePath="/td1202"/>

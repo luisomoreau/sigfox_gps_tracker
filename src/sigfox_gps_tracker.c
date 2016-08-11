@@ -31,8 +31,6 @@
  *
   ******************************************************************************/
 
-//@TODO encrypt payload
-//@TODO check that gps in not getting the fix for the downlink
 #include "config.h"
 
 #include <stdint.h>
@@ -69,6 +67,9 @@
 
 // Interval at which position is reported (in seconds)
 #define FIX_INTERVAL 1*3600 // Send a Sigfox message every 1 hour
+
+/** Acceptable minimum horizontal accuracy, 800 to be very accurate */
+#define FIX_HDOP 800
 
 /** Boot monitoring, 1 to enable */
 #define BOOT_MONITORING 0
@@ -153,16 +154,8 @@ static void GPSFix(TD_GEOLOC_Fix_t * fix, bool timeout)
 
 		//Now we add the received data in the bytes array:
 
-		//Battery
-		for(i=0; i<255; i++){
-			if(mv>=i*15 && mv<=(i+1)*15){
-				bytes[0] = bytes[0] |  i;
-			}else if(mv>3825){
-				bytes[0] = bytes[0] | 0xFF;
-			}
-		}
-
 		//Latitude
+		//Hint: divid the return value by 10 will make it understandable by Sigfox backend
 		if (fix->position.latitude < 0) {
 			  latitude = (int32_t)(-1)* ((int32_t)fix->position.latitude / 10) ;
 			  latitude_direction = 'S';
@@ -171,10 +164,10 @@ static void GPSFix(TD_GEOLOC_Fix_t * fix, bool timeout)
 			  latitude = fix->position.latitude / 10;
 			  latitude_direction = 'N';
 		}
-		bytes[1] = (latitude >> 24) & 0xFF;
-		bytes[2] = (latitude >> 16) & 0xFF;
-		bytes[3] = (latitude >> 8) & 0xFF;
-		bytes[4] = latitude & 0xFF;
+		bytes[0] = (latitude >> 24) & 0xFF;
+		bytes[1] = (latitude >> 16) & 0xFF;
+		bytes[2] = (latitude >> 8) & 0xFF;
+		bytes[3] = latitude & 0xFF;
 
 		//Longitude
 		if (fix->position.longitude < 0) {
@@ -185,10 +178,19 @@ static void GPSFix(TD_GEOLOC_Fix_t * fix, bool timeout)
 			  longitude = fix->position.longitude / 10;
 			  longitude_direction = 'E';
 		}
-		bytes[5] = (longitude >> 24) & 0xFF;
-		bytes[6] = (longitude >> 16) & 0xFF;
-		bytes[7] = (longitude >> 8) & 0xFF;
-		bytes[8] = longitude & 0xFF;
+		bytes[4] = (longitude >> 24) & 0xFF;
+		bytes[5] = (longitude >> 16) & 0xFF;
+		bytes[6] = (longitude >> 8) & 0xFF;
+		bytes[7] = longitude & 0xFF;
+
+		//Battery
+		for(i=0; i<255; i++){
+			if(mv>=i*15 && mv<=(i+1)*15){
+				bytes[8] = bytes[8] |  i;
+			}else if(mv>3825){
+				bytes[8] = bytes[8] | 0xFF;
+			}
+		}
 
 		//Hdop
 		/*
@@ -251,7 +253,7 @@ static void GPSFix(TD_GEOLOC_Fix_t * fix, bool timeout)
 			DEBUG_PRINTF("bytes[%d]: %x\r\n", i, bytes[i]);
 		}
 		//TD_GEOLOC_PrintfFix(fix);
-		encryption(&bytes, &cryptMessage, size);
+		//encryption(&bytes, &cryptMessage, size);
 		for(i=0;i<size;i++){
 			DEBUG_PRINTF("crypt[%d]: %x\r\n", i, cryptMessage[i]);
 		}
@@ -270,6 +272,7 @@ static void GPSFix(TD_GEOLOC_Fix_t * fix, bool timeout)
 		}
 
 	} else if (timeout) {
+		//If no GPS fix has been found, we still send the voltage
 		uint32_t mv = TD_MEASURE_VoltageTemperatureExtended(false);
 		DEBUG_PRINTF("Voltage: %d\r\n", mv);
 		for(i=0; i<255; i++){
